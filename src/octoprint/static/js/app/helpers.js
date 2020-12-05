@@ -1592,3 +1592,80 @@ var loadFromLocalStorage = function (key) {
     }
     return current;
 };
+
+/**
+ * Packs multiple files in a ZIP file that can then be downloaded.
+ *
+ * @param files An array of dictionaries in the form of:
+ *           * name: The filename
+ *           * url: URL from which the file can be downloaded
+ * @returns {Promise}
+ */
+var downloadMultipleFiles = function (files, zipName) {
+    var zip = new JSZip();
+
+    var handler = function (file) {
+        return fetch(file["url"])
+            .then(
+                function (content) {
+                    zip.file(_.escape(file["name"]), content.blob());
+                    deferred.notify(
+                        _.sprintf(gettext("Packed %(filename)s"), {
+                            filename: _.escape(file["name"])
+                        }),
+                        true
+                    );
+                },
+                function (reason) {
+                    let short = _.sprintf(
+                        gettext("Packing of %(filename)s failed, continuing..."),
+                        {filename: _.escape(file["name"])}
+                    );
+                    let long = _.sprintf(
+                        gettext("Packing of %(filename)s failed: %(error)s"),
+                        {
+                            filename: _.escape(file["name"]),
+                            error: _.escape(reason.responseText)
+                        }
+                    );
+                    deferred.notify(short, long, false);
+                }
+            )
+            .finally(function () {
+                let d = $.Deferred();
+                d.resolve.apply(d, arguments);
+            });
+    };
+
+    var deferred = $.Deferred();
+    var promise = deferred.promise();
+
+    var options = {
+        title: gettext("Packing files"),
+        max: files.length,
+        output: true
+    };
+    var dialog = showProgressModal(options, promise);
+
+    var requests = [];
+    _.each(files, function (file) {
+        let request = handler(file);
+        requests.push(request);
+    });
+
+    $.when.apply($, requests).done(function () {
+        deferred.resolve();
+    });
+
+    promise.then(function () {
+        zip.generateAsync({
+            type: "blob",
+            compression: "STORE"
+        }).then(function (blob) {
+            saveAs(blob, zipName);
+            dialog.modal("toggle");
+        });
+    });
+
+    return promise;
+};

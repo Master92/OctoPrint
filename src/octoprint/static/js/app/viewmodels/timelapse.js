@@ -383,77 +383,19 @@ $(function () {
             )
                 return;
 
-            var files = self.markedForFileDeletion();
-            var zip = new JSZip();
-
-            var handler = function (filename) {
+            var files = [];
+            _.each(self.markedForFileDeletion(), function (file) {
                 let curTimelapse = self.listHelper.allItems.find(
-                    (item) => item.name === _.escape(filename)
+                    (item) => item.name === _.escape(file)
                 );
-                return fetch(curTimelapse.url)
-                    .then(
-                        function (content) {
-                            zip.file(_.escape(filename), content.blob());
-                            deferred.notify(
-                                _.sprintf(gettext("Packed %(filename)s"), {
-                                    filename: _.escape(filename)
-                                }),
-                                true
-                            );
-                        },
-                        function (reason) {
-                            var short = _.sprintf(
-                                gettext("Packing of %(filename)s failed, continuing..."),
-                                {filename: _.escape(filename)}
-                            );
-                            var long = _.sprintf(
-                                gettext("Packing of %(filename)s failed: %(error)s"),
-                                {
-                                    filename: _.escape(filename),
-                                    error: _.escape(reason.responseText)
-                                }
-                            );
-                            deferred.notify(short, long, false);
-                        }
-                    )
-                    .finally(function () {
-                        var d = $.Deferred();
-                        d.resolve.apply(d, arguments);
-                    });
-            };
-
-            var deferred = $.Deferred();
-            var promise = deferred.promise();
-
-            var options = {
-                title: gettext("Packing files"),
-                max: files.length,
-                output: true
-            };
-            var dialog = showProgressModal(options, promise);
-
-            var requests = [];
-            _.each(files, function (filename) {
-                let request = handler(filename);
-                requests.push(request);
+                files.push({name: _.escape(file), url: curTimelapse.url});
             });
 
-            $.when.apply($, requests).done(function () {
-                deferred.resolve();
-                self.requestData();
-            });
-
-            promise.then(function () {
-                zip.generateAsync({
-                    type: "blob",
-                    compression: "STORE"
-                }).then(function (blob) {
-                    saveAs(blob, "OctoPrint-Timelapses.zip");
-                    dialog.modal("toggle");
-                });
-            });
-
-            return promise;
+            return downloadMultipleFiles(files, "OctoPrint-Timelapses.zip").done(
+                function () {
+                    self.requestData();
+                }
+            );
         };
 
         self.markUnrenderedOnPage = function () {
