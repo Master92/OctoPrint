@@ -273,6 +273,19 @@ $(function () {
             );
         };
 
+        self.downloadMarkedFiles = function () {
+            var files = [];
+
+            _.each(self.markedForDeletion(), function (file) {
+                let curFile = self.listHelper.allItems.find((item) => item.name === file);
+                files.push({name: file, url: curFile.refs.download});
+            });
+
+            return downloadMultipleFiles(files, "octoprint-logs.zip").done(function () {
+                self.requestData();
+            });
+        };
+
         self.onServerReconnect = self.onUserLoggedIn = self.onEventSettingsUpdated = function () {
             if (
                 !self.loginState.hasPermission(
