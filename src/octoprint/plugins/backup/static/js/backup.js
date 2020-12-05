@@ -197,6 +197,20 @@ $(function () {
             );
         };
 
+        self.downloadMarkedFiles = function () {
+            var files = [];
+            _.each(self.markedForBackupDeletion(), function (file) {
+                let curItem = self.backups.allItems.find((item) => item.name === file);
+                files.push({name: file, url: curItem.url});
+            });
+
+            return downloadMultipleFiles(files, "octoprint-backups.zip").done(
+                function () {
+                    self.requestData();
+                }
+            );
+        };
+
         self.onStartup = function () {
             self.restoreDialog = $("#settings_plugin_backup_restoredialog");
             self.restoreOutput = $("#settings_plugin_backup_restoredialog_output");

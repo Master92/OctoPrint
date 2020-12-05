@@ -29,6 +29,7 @@
             </ul>
         </div>
         <button class="btn btn-small" data-bind="click: removeMarkedFiles, enable: markedForBackupDeletion().length > 0">{{ _('Delete selected') }}</button>
+        <button class="btn btn-small" data-bind="click: downloadMarkedFiles, enable: markedForBackupDeletion().length > 0">{{_('Download selected') }}</button>
     </div>
     <table class="table table-condensed table-hover" id="settings_plugin_backup_backup_table">
         <thead>
