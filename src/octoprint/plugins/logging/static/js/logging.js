@@ -15,7 +15,7 @@ $(function () {
         self.freeSpace = ko.observable(undefined);
         self.totalSpace = ko.observable(undefined);
 
-        self.markedForDeletion = ko.observableArray([]);
+        self.markedFiles = ko.observableArray([]);
 
         self.availableLoggersSorted = ko.computed(function () {
             return _.sortBy(self.availableLoggers());
@@ -227,17 +227,17 @@ $(function () {
         };
 
         self.markFilesOnPage = function () {
-            self.markedForDeletion(
+            self.markedFiles(
                 _.uniq(
                     self
-                        .markedForDeletion()
+                        .markedFiles()
                         .concat(_.map(self.listHelper.paginatedItems(), "name"))
                 )
             );
         };
 
         self.markAllFiles = function () {
-            self.markedForDeletion(_.map(self.listHelper.allItems, "name"));
+            self.markedFiles(_.map(self.listHelper.allItems, "name"));
         };
 
         self.clearMarkedFiles = function () {
@@ -248,7 +248,7 @@ $(function () {
             ) {
                 return;
             }
-            self.markedForDeletion.removeAll();
+            self.markedFiles.removeAll();
         };
 
         self.removeMarkedFiles = function () {
@@ -260,14 +260,14 @@ $(function () {
                 return;
             }
             var perform = function () {
-                self._bulkRemove(self.markedForDeletion(), "files").done(function () {
-                    self.markedForDeletion.removeAll();
+                self._bulkRemove(self.markedFiles(), "files").done(function () {
+                    self.markedFiles.removeAll();
                 });
             };
 
             showConfirmationDialog(
                 _.sprintf(gettext("You are about to delete %(count)d log files."), {
-                    count: self.markedForDeletion().length
+                    count: self.markedFiles().length
                 }),
                 perform
             );
@@ -276,7 +276,7 @@ $(function () {
         self.downloadMarkedFiles = function () {
             var files = [];
 
-            _.each(self.markedForDeletion(), function (file) {
+            _.each(self.markedFiles(), function (file) {
                 let curFile = self.listHelper.allItems.find((item) => item.name === file);
                 files.push({name: file, url: curFile.refs.download});
             });

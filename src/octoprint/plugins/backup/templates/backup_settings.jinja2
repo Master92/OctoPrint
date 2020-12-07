@@ -28,8 +28,8 @@
                 <li><a href="javascript:void(0)" data-bind="click: clearMarkedFiles">{{ _('Clear selection') }}</a></li>
             </ul>
         </div>
-        <button class="btn btn-small" data-bind="click: removeMarkedFiles, enable: markedForBackupDeletion().length > 0">{{ _('Delete selected') }}</button>
-        <button class="btn btn-small" data-bind="click: downloadMarkedFiles, enable: markedForBackupDeletion().length > 0">{{_('Download selected') }}</button>
+        <button class="btn btn-small" data-bind="click: removeMarkedFiles, enable: markedFiles().length > 0">{{ _('Delete selected') }}</button>
+        <button class="btn btn-small" data-bind="click: downloadMarkedFiles, enable: markedFiles().length > 0">{{_('Download selected') }}</button>
     </div>
     <table class="table table-condensed table-hover" id="settings_plugin_backup_backup_table">
         <thead>
@@ -43,7 +43,7 @@
         </thead>
         <tbody data-bind="foreach: backups.paginatedItems">
         <tr>
-            <td class="settings_plugin_backup_checkbox"><input type="checkbox" data-bind="value: name, checked: $root.markedForBackupDeletion"></td>
+            <td class="settings_plugin_backup_checkbox"><input type="checkbox" data-bind="value: name, checked: $root.markedFiles"></td>
             <td class="settings_plugin_backup_name" data-bind="text: name"></td>
             <td class="settings_plugin_backup_date" data-bind="text: formatDate(date)"></td>
             <td class="settings_plugin_backup_size" data-bind="text: formatSize(size)"></td>

@@ -22,7 +22,7 @@ $(function () {
             10
         );
 
-        self.markedForBackupDeletion = ko.observableArray([]);
+        self.markedFiles = ko.observableArray([]);
 
         self.excludeFromBackup = ko.observableArray([]);
         self.backupInProgress = ko.observable(false);
@@ -165,33 +165,33 @@ $(function () {
         };
 
         self.markFilesOnPage = function () {
-            self.markedForBackupDeletion(
+            self.markedFiles(
                 _.uniq(
                     self
-                        .markedForBackupDeletion()
+                        .markedFiles()
                         .concat(_.map(self.backups.paginatedItems(), "name"))
                 )
             );
         };
 
         self.markAllFiles = function () {
-            self.markedForBackupDeletion(_.map(self.backups.allItems, "name"));
+            self.markedFiles(_.map(self.backups.allItems, "name"));
         };
 
         self.clearMarkedFiles = function () {
-            self.markedForBackupDeletion.removeAll();
+            self.markedFiles.removeAll();
         };
 
         self.removeMarkedFiles = function () {
             var perform = function () {
-                self._bulkRemove(self.markedForBackupDeletion()).done(function () {
-                    self.markedForBackupDeletion.removeAll();
+                self._bulkRemove(self.markedFiles()).done(function () {
+                    self.markedFiles.removeAll();
                 });
             };
 
             showConfirmationDialog(
                 _.sprintf(gettext("You are about to delete %(count)d backups."), {
-                    count: self.markedForBackupDeletion().length
+                    count: self.markedFiles().length
                 }),
                 perform
             );
@@ -199,7 +199,7 @@ $(function () {
 
         self.downloadMarkedFiles = function () {
             var files = [];
-            _.each(self.markedForBackupDeletion(), function (file) {
+            _.each(self.markedFiles(), function (file) {
                 let curItem = self.backups.allItems.find((item) => item.name === file);
                 files.push({name: file, url: curItem.url});
             });

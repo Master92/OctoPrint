@@ -74,8 +74,8 @@ $(function () {
         self.isReady = ko.observable(undefined);
         self.isLoading = ko.observable(undefined);
 
-        self.markedForFileDeletion = ko.observableArray([]);
-        self.markedForUnrenderedDeletion = ko.observableArray([]);
+        self.markedFiles = ko.observableArray([]);
+        self.markedUnrenderedFiles = ko.observableArray([]);
 
         self.isTemporary = ko.pureComputed(function () {
             return self.isDirty() && !self.persist();
@@ -280,21 +280,21 @@ $(function () {
         };
 
         self.markFilesOnPage = function () {
-            self.markedForFileDeletion(
+            self.markedFiles(
                 _.uniq(
                     self
-                        .markedForFileDeletion()
+                        .markedFiles()
                         .concat(_.map(self.listHelper.paginatedItems(), "name"))
                 )
             );
         };
 
         self.markAllFiles = function () {
-            self.markedForFileDeletion(_.map(self.listHelper.allItems, "name"));
+            self.markedFiles(_.map(self.listHelper.allItems, "name"));
         };
 
         self.clearMarkedFiles = function () {
-            self.markedForFileDeletion.removeAll();
+            self.markedFiles.removeAll();
         };
 
         self.isTimelapseViewable = function (data) {
@@ -325,7 +325,7 @@ $(function () {
                 OctoPrint.timelapse
                     .delete(filename)
                     .done(function () {
-                        self.markedForFileDeletion.remove(filename);
+                        self.markedFiles.remove(filename);
                         self.requestData();
                     })
                     .fail(function (jqXHR) {
@@ -364,14 +364,14 @@ $(function () {
                 return;
 
             var perform = function () {
-                self._bulkRemove(self.markedForFileDeletion(), "files").done(function () {
-                    self.markedForFileDeletion.removeAll();
+                self._bulkRemove(self.markedFiles(), "files").done(function () {
+                    self.markedFiles.removeAll();
                 });
             };
 
             showConfirmationDialog(
                 _.sprintf(gettext("You are about to delete %(count)d timelapse files."), {
-                    count: self.markedForFileDeletion().length
+                    count: self.markedFiles().length
                 }),
                 perform
             );
@@ -384,7 +384,7 @@ $(function () {
                 return;
 
             var files = [];
-            _.each(self.markedForFileDeletion(), function (file) {
+            _.each(self.markedFiles(), function (file) {
                 let curTimelapse = self.listHelper.allItems.find(
                     (item) => item.name === _.escape(file)
                 );
@@ -399,23 +399,21 @@ $(function () {
         };
 
         self.markUnrenderedOnPage = function () {
-            self.markedForUnrenderedDeletion(
+            self.markedUnrenderedFiles(
                 _.uniq(
                     self
-                        .markedForUnrenderedDeletion()
+                        .markedUnrenderedFiles()
                         .concat(_.map(self.unrenderedListHelper.paginatedItems(), "name"))
                 )
             );
         };
 
         self.markAllUnrendered = function () {
-            self.markedForUnrenderedDeletion(
-                _.map(self.unrenderedListHelper.allItems, "name")
-            );
+            self.markedUnrenderedFiles(_.map(self.unrenderedListHelper.allItems, "name"));
         };
 
         self.clearMarkedUnrendered = function () {
-            self.markedForUnrenderedDeletion.removeAll();
+            self.markedUnrenderedFiles.removeAll();
         };
 
         self.removeUnrendered = function (name) {
@@ -424,7 +422,7 @@ $(function () {
 
             var perform = function () {
                 OctoPrint.timelapse.deleteUnrendered(name).done(function () {
-                    self.markedForUnrenderedDeletion.remove(name);
+                    self.markedUnrenderedFiles.remove(name);
                     self.requestData();
                 });
             };
@@ -443,9 +441,9 @@ $(function () {
                 return;
 
             var perform = function () {
-                self._bulkRemove(self.markedForUnrenderedDeletion(), "unrendered").done(
+                self._bulkRemove(self.markedUnrenderedFiles(), "unrendered").done(
                     function () {
-                        self.markedForUnrenderedDeletion.removeAll();
+                        self.markedUnrenderedFiles.removeAll();
                     }
                 );
             };
@@ -453,7 +451,7 @@ $(function () {
             showConfirmationDialog(
                 _.sprintf(
                     gettext("You are about to delete %(count)d unrendered timelapses."),
-                    {count: self.markedForUnrenderedDeletion().length}
+                    {count: self.markedUnrenderedFiles().length}
                 ),
                 perform
             );
